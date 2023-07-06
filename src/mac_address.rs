@@ -44,7 +44,7 @@ impl MacAddr {
         }
     }
 
-    /// Construct a broadcast MAC address.
+    /// Constructs a broadcast MAC address.
     pub const fn broadcast() -> Self {
         MacAddr(0xff, 0xff, 0xff, 0xff, 0xff, 0xff)
     }

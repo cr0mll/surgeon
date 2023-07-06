@@ -60,8 +60,9 @@ mod tests {
         assert_eq!(Ipv4Addr::new(128, 90, 227, 232), Ipv4Addr::from_str("128.90.227.232").unwrap());
     }
 
+    #[test]
     fn loopback() {
-        assert_eq!(Ipv4Addr::loopback(), Ipv4Addr::new(127, 0, 0, 0));
+        assert_eq!(Ipv4Addr::loopback(), Ipv4Addr::new(127, 0, 0, 1));
         assert!(Ipv4Addr::new(127,0,0,1).is_loopback());
     }
 }
