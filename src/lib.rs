@@ -7,6 +7,12 @@ pub use mac_address::*;
 pub mod layer;
 pub use layer::*;
 
+pub mod interface;
+pub use interface::*;
+
+pub mod primitives;
+pub use primitives::*;
+
 #[cfg(test)]
 mod tests {
     use super::*;

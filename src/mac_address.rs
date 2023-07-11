@@ -16,7 +16,7 @@ impl MacAddr {
     
     /// Constructs a MAC address from 6 values.
     pub fn new(a: u8, b: u8, c:u8, d:u8, e:u8, f:u8) -> Self {
-        MacAddr(a,b,c,d,e,f)
+        Self(a,b,c,d,e,f)
     }
 
     /// Attempts to construct a MAC address from a string.
@@ -49,6 +49,12 @@ impl MacAddr {
         MacAddr(0xff, 0xff, 0xff, 0xff, 0xff, 0xff)
     }
 
+}
+
+impl From<pnet_datalink::MacAddr> for MacAddr {
+    fn from(pnet_mac_addr: pnet_datalink::MacAddr) -> Self {
+        Self(pnet_mac_addr.0, pnet_mac_addr.1, pnet_mac_addr.2, pnet_mac_addr.3, pnet_mac_addr.4, pnet_mac_addr.5)
+    }
 }
 
 impl fmt::Display for MacAddr {

@@ -1,16 +1,4 @@
-use std::{fmt, num::ParseIntError};
-
-use thiserror::Error;
-
-#[derive(Error, Debug, PartialEq, Eq, Clone)]
-pub enum IpAddressError
-{
-    #[error("Invalid IP address")]
-    InvalidAddress(#[from] ParseIntError),
-    
-    #[error("Invalid IP address length")]
-    InvalidLength
-}
+use super::*;
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Default, Hash, Ord, PartialOrd)]
 pub struct Ipv4Addr(u8, u8, u8, u8);
@@ -26,19 +14,25 @@ impl Ipv4Addr {
     fn from_str(string: &str) -> Result<Self, IpAddressError> {
         let octets : Vec<&str> = string.split('.').collect();
 
-        if octets.len() > 4 { return Err(IpAddressError::InvalidLength); }
+        if octets.len() != 4 { return Err(IpAddressError::InvalidLength); }
         
         Ok(Ipv4Addr(octets[0].parse()?, octets[1].parse()?, octets[2].parse()?,octets[3].parse()?))
     }
 
-    /// Constructs a loopback address
+    /// Constructs a loopback address.
     const fn loopback() -> Self {
         Ipv4Addr(127, 0, 0, 1)
     }
 
-    /// Checks if an IP address is a loopback address
+    /// Checks if an IP address is a loopback address.
     fn is_loopback(&self) -> bool {
-        return self == &Self::loopback()
+        return self.is_in_range(Ipv4Addr(127, 0, 0, 0), Ipv4Addr(127, 255, 255, 255))
+    }
+
+    /// Checks if the IP address is in the specified IP range (inclusively).
+    fn is_in_range(&self, lower_bound: Self, upper_bound:Self) -> bool
+    {
+        *self >= lower_bound && *self <= upper_bound
     }
 }
 
@@ -63,6 +57,6 @@ mod tests {
     #[test]
     fn loopback() {
         assert_eq!(Ipv4Addr::loopback(), Ipv4Addr::new(127, 0, 0, 1));
-        assert!(Ipv4Addr::new(127,0,0,1).is_loopback());
+        assert!(Ipv4Addr::new(127,234,255,112).is_loopback());
     }
 }

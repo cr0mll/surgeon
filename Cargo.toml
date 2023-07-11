@@ -7,4 +7,5 @@ edition = "2021"
 
 [dependencies]
 hex = "0.4.3"
+pnet_datalink = "0.33.0"
 thiserror = "1.0.40"
