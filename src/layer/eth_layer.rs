@@ -47,36 +47,22 @@ impl Q802_1Tag {
 
     /// Returns the value of the 3-bit Priority Code Point (PCP) field of the TIC.
     fn pcp(self) -> U3 {
-        ((self.tic & 0b1110_0000_0000_0000) >> 13) as U3
+        U3::try_from(((self.tic & 0b1110_0000_0000_0000) >> 13) as u8).unwrap()
     }
 
-    /// Sets the Priority Code Point field. If the provided PCP cannot fit into a 3-bit value, returns an error.
-    fn set_pcp(&mut self, pcp: U3) -> Result<(), BitPrimitiveError> {
-        if pcp <= 0b0000_0111 {
-            self.tic = (self.tic & !(0b111 << 13)) | ((pcp as u16) << 13);
-            Ok(())
-        }
-        else {
-            Err(BitPrimitiveError::ValueOutOfRange)
-        }
+    /// Sets the Priority Code Point field.
+    fn set_pcp(&mut self, pcp: U3) {
+        self.tic = (self.tic & !(0b111 << 13)) | ((pcp.value() as u16)<< 13);
     }
 
     /// Returns the value of the VLAN Identifier (VID).
     fn vid(self) -> U12 {
-        self.tic & 0b0000_1111_1111_1111
+        U12::try_from(self.tic & 0b0000_1111_1111_1111).unwrap()
     }
 
     /// Sets the VLAN identifier. If the provided VID cannot fit into a 12-bit value, returns an error.
-    fn set_vid(&mut self, vid: U12) -> Result<(), BitPrimitiveError> {
-        
-        if vid <= 0b0000_1111_1111_1111
-        {
-            self.tic |= vid; 
-            Ok(())
-        }
-        else {
-            Err(BitPrimitiveError::ValueOutOfRange)
-        }
+    fn set_vid(&mut self, vid: U12) {
+        self.tic |= vid.value(); 
     }
 }
 
@@ -210,15 +196,13 @@ mod tests {
 
 
         // Test the VID
-        assert_eq!(tag.set_vid(12), Ok(()));
-        assert_eq!(tag.vid(), 12);
-        assert_eq!(tag.set_vid(0b1111_1111_1111_1111), Err(BitPrimitiveError::ValueOutOfRange));
+        tag.set_vid(12.try_into().unwrap());
+        assert_eq!(tag.vid(), 12.try_into().unwrap());
         
         // Test the PCP
         let mut tag = Q802_1Tag::default();
-        assert_eq!(tag.set_pcp(0b101),Ok(()));
-        assert_eq!(tag.pcp(), 0b101);
-        assert_eq!(tag.set_pcp(0b1111_1111), Err(BitPrimitiveError::ValueOutOfRange));
+        tag.set_pcp(0b101.try_into().unwrap());
+        assert_eq!(tag.pcp(), 0b101.try_into().unwrap());
 
         // Test the DEI
         let mut tag = Q802_1Tag::default();
@@ -229,48 +213,48 @@ mod tests {
 
         // Test order of operations
         let mut tag = Q802_1Tag::default();
-        tag.set_vid(3456).unwrap();
-        tag.set_pcp(0b101).unwrap();
+        tag.set_vid(U12::try_from(3456).unwrap());
+        tag.set_pcp(U3::try_from(0b101).unwrap());
         tag.set_drop_eligible(true);
 
         let mut tag = Q802_1Tag::default();
-        tag.set_vid(3456).unwrap();
+        tag.set_vid(U12::try_from(3456).unwrap());
         tag.set_drop_eligible(true);
-        tag.set_pcp(0b101).unwrap();
+        tag.set_pcp(U3::try_from(0b101).unwrap());
 
-        assert_eq!(tag.vid(), 3456);
-        assert_eq!(tag.pcp(), 0b101);
+        assert_eq!(tag.vid(), 3456.try_into().unwrap());
+        assert_eq!(tag.pcp(), 0b101.try_into().unwrap());
         assert_eq!(tag.is_drop_eligible(), true);
 
         let mut tag = Q802_1Tag::default();
-        tag.set_pcp(0b101).unwrap();
+        tag.set_pcp(0b101.try_into().unwrap());
         tag.set_drop_eligible(true);
-        tag.set_vid(3456).unwrap();
+        tag.set_vid(3456.try_into().unwrap());
 
-        assert_eq!(tag.vid(), 3456);
-        assert_eq!(tag.pcp(), 0b101);
+        assert_eq!(tag.vid(), 3456.try_into().unwrap());
+        assert_eq!(tag.pcp(), 0b101.try_into().unwrap());
         assert_eq!(tag.is_drop_eligible(), true);
 
-        assert_eq!(tag.vid(), 3456);
-        assert_eq!(tag.pcp(), 0b101);
-        assert_eq!(tag.is_drop_eligible(), true);
-
-        let mut tag = Q802_1Tag::default();
-        tag.set_drop_eligible(true);
-        tag.set_vid(3456).unwrap();
-        tag.set_pcp(0b101).unwrap();
-
-        assert_eq!(tag.vid(), 3456);
-        assert_eq!(tag.pcp(), 0b101);
+        assert_eq!(tag.vid(), 3456.try_into().unwrap());
+        assert_eq!(tag.pcp(), 0b101.try_into().unwrap());
         assert_eq!(tag.is_drop_eligible(), true);
 
         let mut tag = Q802_1Tag::default();
         tag.set_drop_eligible(true);
-        tag.set_pcp(0b101).unwrap();
-        tag.set_vid(3456).unwrap();
+        tag.set_vid(3456.try_into().unwrap());
+        tag.set_pcp(0b101.try_into().unwrap());
 
-        assert_eq!(tag.vid(), 3456);
-        assert_eq!(tag.pcp(), 0b101);
+        assert_eq!(tag.vid(), 3456.try_into().unwrap());
+        assert_eq!(tag.pcp(), 0b101.try_into().unwrap());
+        assert_eq!(tag.is_drop_eligible(), true);
+
+        let mut tag = Q802_1Tag::default();
+        tag.set_drop_eligible(true);
+        tag.set_pcp(0b101.try_into().unwrap());
+        tag.set_vid(3456.try_into().unwrap());
+
+        assert_eq!(tag.vid(), 3456.try_into().unwrap());
+        assert_eq!(tag.pcp(), 0b101.try_into().unwrap());
         assert_eq!(tag.is_drop_eligible(), true);
     }
 }
